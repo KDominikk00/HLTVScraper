@@ -1,6 +1,6 @@
 
 
-![HLTVScraper](https://imgur.com/x8nwTXl)
+![HLTVScraper](https://i.imgur.com/x8nwTXl.png)
 
 # HLTVScraper
 
