@@ -80,4 +80,13 @@ public class HltvScraperService {
 
         return players;
     }
+
+    // Add setters for testing
+    public void setCachedPlayers(List<PlayerDTO> cachedPlayers) {
+        this.cachedPlayers = cachedPlayers;
+    }
+
+    public void setLastFetchTime(LocalDateTime lastFetchTime) {
+        this.lastFetchTime = lastFetchTime;
+    }
 }
