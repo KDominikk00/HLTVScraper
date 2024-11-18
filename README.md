@@ -13,9 +13,20 @@ HLTVScraper is a powerful web scraper and RESTful API built with Spring Boot, de
 - **Player Stats**: Retrieves a comprehensive range of statistics for CS2 professional players.
 - **Easy Integration**: Simple to integrate into your applications or data analysis workflows.
 
+  ## Technologies Used
+
+- **REST API**:
+  - **Spring Boot**: A powerful framework for building production-grade applications with ease.
+  - **Spring JPA**: Simplifies database interactions using Java Persistence API (JPA).
+  - **Lombok**: A Java library used to reduce boilerplate code.
+
+- **Web Scraper**:
+  - **Selenium**: Used for automating web browsers to scrape player data.
+  - **ChromeDriver**: Required by Selenium for controlling the Chrome browser during the scraping process.
+
 ## Integration with CSComparison
 
-HLTVScraper serves as a crucial component of the **CSComparison** app, which allows users to compare the statistics of different CS2 professional players. By utilizing the `/players` endpoint provided by HLTVScraper, CSComparison can fetch real-time player data, enabling users to make informed decisions based on up-to-date statistics. This integration enhances the overall user experience by providing a seamless way to access and analyze player performance.
+HLTVScraper serves as a crucial component of the **CSComparison** app, which allows users to compare the statistics of different CS2 professional players. By utilizing the `/hltv/players` endpoint provided by HLTVScraper, CSComparison can fetch real-time player data, enabling users to make informed decisions based on up-to-date statistics. This integration enhances the overall user experience by providing a seamless way to access and analyze player performance.
 
 ## Getting Started
 
