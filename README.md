@@ -1,56 +1,80 @@
+# HLTV Scraper API
 
+Spring Boot service that scrapes HLTV player stats and exposes a reusable API + service layer for other applications.
 
-![HLTVScraper](https://i.imgur.com/x8nwTXl.png)
+## What changed
 
-# HLTVScraper
+- Rebuilt around a pluggable source abstraction (`HltvPlayerSource`) so parsing/fetching backends can be swapped.
+- Added source fallback strategy (`ConfiguredHltvPlayerSource`) with configurable order (`jsoup`, `selenium`).
+- Kept a fast JSoup scraper and added Selenium headless fallback for anti-bot protected responses.
+- Added typed domain models (`PlayerStats`) and response models.
+- Added thread-safe TTL cache with `force refresh` support.
+- Added query filters (`team`, `minRating`, `limit`) and player lookup by nickname.
+- Added centralized exception handling with consistent JSON errors.
+- Replaced fragile live-browser tests with deterministic unit/web tests.
 
-HLTVScraper is a powerful web scraper and RESTful API built with Spring Boot, designed to gather and serve statistics for professional CS2 players from HLTV.org. It provides an easy-to-use endpoint that delivers detailed player information, making it ideal for developers and analysts who need access to competitive gaming statistics.
+## API
 
-## Features
+Base path: `/api/v1/hltv`
 
-- **Web Scraping**: Automatically scrapes player statistics from HLTV.org.
-- **RESTful API**: Provides a clean and efficient API for accessing player data.
-- **Player Stats**: Retrieves a comprehensive range of statistics for CS2 professional players.
-- **Easy Integration**: Simple to integrate into your applications or data analysis workflows.
+### `GET /players`
 
-  ## Technologies Used
+Query params:
 
-- **REST API**:
-  - **Spring Boot**: A powerful framework for building production-grade applications with ease.
-  - **Spring JPA**: Simplifies database interactions using Java Persistence API (JPA).
-  - **Lombok**: A Java library used to reduce boilerplate code.
+- `refresh` (`true|false`, default `false`): bypass cache.
+- `limit` (`> 0`): max number of players.
+- `team` (string): case-insensitive team filter.
+- `minRating` (`>= 0`): minimum rating filter.
 
-- **Web Scraper**:
-  - **Selenium**: Used for automating web browsers to scrape player data.
-  - **ChromeDriver**: Required by Selenium for controlling the Chrome browser during the scraping process.
+Response:
 
-## Integration with CSComparison
+```json
+{
+  "players": [
+    {
+      "nickname": "donk",
+      "team": "Spirit",
+      "teamLogo": "https://...",
+      "maps": 90,
+      "rounds": 1900,
+      "killDeathDiff": 150,
+      "killDeathRatio": 1.3,
+      "rating": 1.35
+    }
+  ],
+  "count": 1,
+  "fetchedAt": "2026-01-01T00:00:00Z",
+  "fromCache": true
+}
+```
 
-HLTVScraper serves as a crucial component of the **CSComparison** app, which allows users to compare the statistics of different CS2 professional players. By utilizing the `/hltv/players` endpoint provided by HLTVScraper, CSComparison can fetch real-time player data, enabling users to make informed decisions based on up-to-date statistics. This integration enhances the overall user experience by providing a seamless way to access and analyze player performance.
+### `GET /players/{nickname}`
 
-## Getting Started
+Returns a single player or `404`.
 
-### Prerequisites
+## Configuration
 
-Before you begin, ensure you have met the following requirements:
+`src/main/resources/application.properties`
 
-- Java Development Kit (JDK) 11 or higher installed on your machine.
-- Apache Maven installed for dependency management and building the project.
-- Access to the internet to scrape player data.
+- `hltv.scraper.players-url`
+- `hltv.scraper.request-timeout`
+- `hltv.scraper.cache-ttl`
+- `hltv.scraper.allowed-origins`
+- `hltv.scraper.source-order` (default `jsoup,selenium`)
+- `hltv.scraper.selenium-wait-timeout`
+- `hltv.scraper.selenium-headless`
 
-### Installation
+## Build and run
 
-1. Clone the repository:
+```bash
+./mvnw clean test
+./mvnw spring-boot:run
+```
 
-   ```bash
-   git clone https://github.com/KDominikk00/HLTVScraper.git
-   cd HLTVScraper
+## Framework extension point
 
-2. Build the project using Maven
+To add another data source (e.g. Selenium fallback, static file snapshots, proxy-backed fetcher), implement:
 
-    ```bash
-    mvn clean install
+- `com.example.hltvscraper.hltv.infrastructure.HltvPlayerSourceClient`
 
-3. Run the application
-    ```bash
-    mvn spring-boot:run
+Then register it as a Spring bean and add its id to `hltv.scraper.source-order`.
