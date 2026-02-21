@@ -78,3 +78,7 @@ To add another data source (e.g. Selenium fallback, static file snapshots, proxy
 - `com.example.hltvscraper.hltv.infrastructure.HltvPlayerSourceClient`
 
 Then register it as a Spring bean and add its id to `hltv.scraper.source-order`.
+
+## Disclaimer
+
+I do my best to maintain this project, but it is a solo effort. Frequent UI and structure changes on HLTV may impact whether the scraper works as expected.
