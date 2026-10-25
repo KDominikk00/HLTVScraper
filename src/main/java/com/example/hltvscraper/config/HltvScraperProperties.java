@@ -7,6 +7,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.validation.annotation.Validated;
 
 import java.net.URI;
+import java.nio.file.Path;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
@@ -19,7 +20,10 @@ public class HltvScraperProperties {
     private URI playersUrl = URI.create("https://www.hltv.org/stats/players");
 
     @NotNull
-    private Duration cacheTtl = Duration.ofHours(6);
+    private Duration refreshInterval = Duration.ofHours(6);
+
+    @NotNull
+    private Path snapshotPath = Path.of("data", "players-snapshot.json");
 
     @NotBlank
     private String userAgent =
@@ -43,12 +47,20 @@ public class HltvScraperProperties {
         this.playersUrl = playersUrl;
     }
 
-    public Duration getCacheTtl() {
-        return cacheTtl;
+    public Duration getRefreshInterval() {
+        return refreshInterval;
     }
 
-    public void setCacheTtl(Duration cacheTtl) {
-        this.cacheTtl = cacheTtl;
+    public void setRefreshInterval(Duration refreshInterval) {
+        this.refreshInterval = refreshInterval;
+    }
+
+    public Path getSnapshotPath() {
+        return snapshotPath;
+    }
+
+    public void setSnapshotPath(Path snapshotPath) {
+        this.snapshotPath = snapshotPath;
     }
 
     public String getUserAgent() {

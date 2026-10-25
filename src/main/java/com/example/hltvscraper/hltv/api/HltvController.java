@@ -27,26 +27,22 @@ public class HltvController {
 
     @GetMapping("/players")
     public PlayersResponse getPlayers(
-            @RequestParam(defaultValue = "false") boolean refresh,
             @RequestParam(required = false) @Positive Integer limit,
             @RequestParam(required = false) String team,
             @RequestParam(required = false) @DecimalMin("0.0") Double minRating
     ) {
-        PlayerQuery query = new PlayerQuery(refresh, limit, team, minRating);
+        PlayerQuery query = new PlayerQuery(limit, team, minRating);
         PlayerSearchResult result = playerStatsService.searchPlayers(query);
 
         List<PlayerResponse> players = result.players().stream()
                 .map(PlayerResponse::from)
                 .toList();
 
-        return new PlayersResponse(players, players.size(), result.fetchedAt(), result.fromCache());
+        return new PlayersResponse(players, players.size(), result.fetchedAt());
     }
 
     @GetMapping("/players/{nickname}")
-    public PlayerResponse getPlayerByNickname(
-            @PathVariable String nickname,
-            @RequestParam(defaultValue = "false") boolean refresh
-    ) {
-        return PlayerResponse.from(playerStatsService.getPlayerByNickname(nickname, refresh));
+    public PlayerResponse getPlayerByNickname(@PathVariable String nickname) {
+        return PlayerResponse.from(playerStatsService.getPlayerByNickname(nickname));
     }
 }

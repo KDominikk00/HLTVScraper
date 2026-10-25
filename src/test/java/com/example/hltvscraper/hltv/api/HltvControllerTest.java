@@ -37,32 +37,30 @@ class HltvControllerTest {
         PlayerStats player = new PlayerStats("donk", "Spirit", "logo", 90, 1900, 150, 1.30, 1.35);
         PlayerSearchResult result = new PlayerSearchResult(
                 List.of(player),
-                Instant.parse("2026-01-01T00:00:00Z"),
-                true
+                Instant.parse("2026-01-01T00:00:00Z")
         );
 
-        when(playerStatsService.searchPlayers(argThat(matchesQuery(10, "Spirit", 1.2, true))))
+        when(playerStatsService.searchPlayers(argThat(matchesQuery(10, "Spirit", 1.2))))
                 .thenReturn(result);
 
         mockMvc.perform(get("/api/v1/hltv/players")
-                        .param("refresh", "true")
                         .param("limit", "10")
                         .param("team", "Spirit")
                         .param("minRating", "1.2")
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.count").value(1))
-                .andExpect(jsonPath("$.fromCache").value(true))
+                .andExpect(jsonPath("$.fetchedAt").value("2026-01-01T00:00:00Z"))
                 .andExpect(jsonPath("$.players[0].nickname").value("donk"))
                 .andExpect(jsonPath("$.players[0].team").value("Spirit"))
                 .andExpect(jsonPath("$.players[0].rating").value(1.35));
 
-        verify(playerStatsService).searchPlayers(argThat(matchesQuery(10, "Spirit", 1.2, true)));
+        verify(playerStatsService).searchPlayers(argThat(matchesQuery(10, "Spirit", 1.2)));
     }
 
     @Test
     void returns404WhenPlayerIsMissing() throws Exception {
-        when(playerStatsService.getPlayerByNickname(eq("unknown"), eq(false)))
+        when(playerStatsService.getPlayerByNickname(eq("unknown")))
                 .thenThrow(new PlayerNotFoundException("Player not found: unknown"));
 
         mockMvc.perform(get("/api/v1/hltv/players/unknown"))
@@ -81,12 +79,10 @@ class HltvControllerTest {
     private ArgumentMatcher<com.example.hltvscraper.hltv.application.PlayerQuery> matchesQuery(
             Integer limit,
             String team,
-            Double minRating,
-            boolean refresh
+            Double minRating
     ) {
         return query -> query.limit().equals(limit)
                 && query.team().equals(team)
-                && query.minRating().equals(minRating)
-                && query.forceRefresh() == refresh;
+                && query.minRating().equals(minRating);
     }
 }

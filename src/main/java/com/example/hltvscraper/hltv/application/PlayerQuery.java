@@ -1,11 +1,7 @@
 package com.example.hltvscraper.hltv.application;
 
-public record PlayerQuery(
-        boolean forceRefresh,
-        Integer limit,
-        String team,
-        Double minRating
-) {
+public record PlayerQuery(Integer limit, String team, Double minRating) {
+
     public PlayerQuery {
         if (limit != null && limit < 1) {
             throw new IllegalArgumentException("limit must be greater than 0");
