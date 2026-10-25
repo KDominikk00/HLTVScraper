@@ -11,6 +11,8 @@ import java.time.ZoneOffset;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class SnapshotRefresherTest {
 
@@ -26,6 +28,7 @@ class SnapshotRefresherTest {
 
         PlayerSnapshot snapshot = store.load().orElseThrow();
         assertEquals(NOW, snapshot.fetchedAt());
+        assertFalse(snapshot.partial());
         assertEquals("NiKo", snapshot.players().get(0).nickname());
     }
 
@@ -53,7 +56,9 @@ class SnapshotRefresherTest {
 
         refresher.refresh();
 
-        assertEquals(1, store.load().orElseThrow().players().size());
+        PlayerSnapshot saved = store.load().orElseThrow();
+        assertEquals(1, saved.players().size());
+        assertTrue(saved.partial());
     }
 
     private PlayerStats player(String nickname) {

@@ -37,7 +37,7 @@ public class SnapshotRefresher {
     /** Lets a fresh deployment serve partial data while its first long scrape is still running. */
     private void saveIfEmpty(List<PlayerStats> partial) {
         if (snapshotStore.load().isEmpty() && !partial.isEmpty()) {
-            snapshotStore.save(new PlayerSnapshot(partial, clock.instant()));
+            snapshotStore.save(new PlayerSnapshot(partial, clock.instant(), true));
         }
     }
 }

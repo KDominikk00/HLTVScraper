@@ -7,7 +7,7 @@ Spring Boot service that scrapes Counter-Strike 2 player stats from [bo3.gg](htt
 - A background task scrapes bo3.gg with headless Chrome (Selenium) on startup and then every `scraper.refresh-interval` (24h by default). The pages are rendered client side, so a real browser is needed.
 - The crawl starts at the ranked players list, then follows the tournaments on the home page to their teams, then to each team's starting roster, and finally opens every player page. It uses one browser and waits at least `scraper.request-delay` between page loads.
 - The result is written to a JSON snapshot (`scraper.snapshot-path`) and kept in memory. Requests only read the snapshot, so the API stays fast and never talks to bo3.gg. If a scrape fails, the previous snapshot keeps being served.
-- On a fresh deployment the first scrape publishes partial results every 25 players, so the API has data well before the crawl finishes. Until the first checkpoint it answers `503`.
+- On a fresh deployment the first scrape publishes partial results every 25 players, so the API has data well before the crawl finishes. Until the first checkpoint it answers `503`. A partial snapshot is not treated as fresh, so a restart in the middle of the first scrape starts a new one.
 
 ## What is scraped per player
 
