@@ -1,4 +1,4 @@
-<h1 align="center">CS Stats API</h1>
+<h1 align="center">CS Stats Scraper & API</h1>
 
 <p align="center">
   <em>Pro Counter-Strike 2 player stats, scraped and served.</em><br />
