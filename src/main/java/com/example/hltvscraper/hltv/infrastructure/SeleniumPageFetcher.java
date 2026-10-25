@@ -2,9 +2,6 @@ package com.example.hltvscraper.hltv.infrastructure;
 
 import com.example.hltvscraper.config.HltvScraperProperties;
 import com.example.hltvscraper.hltv.application.ScraperUnavailableException;
-import com.example.hltvscraper.hltv.domain.PlayerStats;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -12,62 +9,50 @@ import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
+import java.net.URI;
 import java.time.Duration;
 import java.util.List;
 
 @Component
-public class SeleniumHltvPlayerSource implements HltvPlayerSourceClient {
+public class SeleniumPageFetcher implements PageFetcher {
 
-    private static final Logger logger = LoggerFactory.getLogger(SeleniumHltvPlayerSource.class);
+    private static final By PLAYER_ROWS = By.cssSelector(".player-ratings-table tbody tr");
 
     private final HltvScraperProperties properties;
-    private final HltvPlayerDocumentParser parser;
 
-    public SeleniumHltvPlayerSource(HltvScraperProperties properties, HltvPlayerDocumentParser parser) {
+    public SeleniumPageFetcher(HltvScraperProperties properties) {
         this.properties = properties;
-        this.parser = parser;
     }
 
     @Override
-    public String id() {
-        return "selenium";
-    }
-
-    @Override
-    public List<PlayerStats> fetchPlayers() {
+    public String fetchHtml(URI url) {
         ChromeOptions options = new ChromeOptions();
         if (properties.isSeleniumHeadless()) {
             options.addArguments("--headless=new");
         }
-        options.addArguments("--disable-gpu");
-        options.addArguments("--disable-dev-shm-usage");
-        options.addArguments("--window-size=1920,1080");
-        options.addArguments("--no-sandbox");
-        options.addArguments("--user-agent=" + properties.getUserAgent());
+        options.addArguments(
+                "--disable-gpu",
+                "--disable-dev-shm-usage",
+                "--window-size=1920,1080",
+                "--no-sandbox",
+                "--user-agent=" + properties.getUserAgent()
+        );
 
         Duration waitTimeout = properties.getSeleniumWaitTimeout();
-
         WebDriver driver = null;
         try {
             driver = new ChromeDriver(options);
             driver.manage().timeouts().pageLoadTimeout(waitTimeout);
+            driver.get(url.toString());
 
-            driver.get(properties.getPlayersUrl().toString());
             WebDriverWait wait = new WebDriverWait(driver, waitTimeout);
             closeCookiePromptIfPresent(driver, wait);
-            wait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector(".player-ratings-table tbody tr")));
-
-            String pageSource = driver.getPageSource();
-            Document document = Jsoup.parse(pageSource, properties.getPlayersUrl().toString());
-            List<PlayerStats> players = parser.parse(document);
-            logger.info("Fetched {} HLTV players through Selenium", players.size());
-            return players;
+            wait.until(ExpectedConditions.presenceOfElementLocated(PLAYER_ROWS));
+            return driver.getPageSource();
         } catch (RuntimeException exception) {
-            throw new ScraperUnavailableException("Selenium HLTV scraping failed", exception);
+            throw new ScraperUnavailableException("Selenium could not load " + url, exception);
         } finally {
             if (driver != null) {
                 driver.quit();

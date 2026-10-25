@@ -5,7 +5,6 @@ import com.example.hltvscraper.hltv.domain.PlayerStats;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 
-import java.time.Duration;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -17,15 +16,11 @@ class LiveScrapeSmokeTest {
     @Test
     void fetchesPlayersFromLiveHltvPage() {
         HltvScraperProperties properties = new HltvScraperProperties();
-        properties.setRequestTimeout(Duration.ofSeconds(30));
-        properties.setSourceOrder(List.of("jsoup", "selenium"));
+        properties.setSeleniumHeadless(!"false".equals(System.getProperty("scrapeHeadless")));
 
-        HltvPlayerDocumentParser parser = new HltvPlayerDocumentParser();
-        ConfiguredHltvPlayerSource source = new ConfiguredHltvPlayerSource(
-                List.of(
-                        new JsoupHltvPlayerSource(properties, parser),
-                        new SeleniumHltvPlayerSource(properties, parser)
-                ),
+        ScrapedHltvPlayerSource source = new ScrapedHltvPlayerSource(
+                new SeleniumPageFetcher(properties),
+                new HltvPlayerDocumentParser(),
                 properties
         );
 

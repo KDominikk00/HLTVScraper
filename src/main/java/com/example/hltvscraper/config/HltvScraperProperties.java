@@ -19,9 +19,6 @@ public class HltvScraperProperties {
     private URI playersUrl = URI.create("https://www.hltv.org/stats/players");
 
     @NotNull
-    private Duration requestTimeout = Duration.ofSeconds(20);
-
-    @NotNull
     private Duration cacheTtl = Duration.ofHours(6);
 
     @NotBlank
@@ -32,10 +29,6 @@ public class HltvScraperProperties {
     @NotEmpty
     private List<String> allowedOrigins =
             new ArrayList<>(List.of("http://localhost:5173"));
-
-    @NotEmpty
-    private List<String> sourceOrder =
-            new ArrayList<>(List.of("jsoup", "selenium"));
 
     @NotNull
     private Duration seleniumWaitTimeout = Duration.ofSeconds(30);
@@ -48,14 +41,6 @@ public class HltvScraperProperties {
 
     public void setPlayersUrl(URI playersUrl) {
         this.playersUrl = playersUrl;
-    }
-
-    public Duration getRequestTimeout() {
-        return requestTimeout;
-    }
-
-    public void setRequestTimeout(Duration requestTimeout) {
-        this.requestTimeout = requestTimeout;
     }
 
     public Duration getCacheTtl() {
@@ -80,14 +65,6 @@ public class HltvScraperProperties {
 
     public void setAllowedOrigins(List<String> allowedOrigins) {
         this.allowedOrigins = new ArrayList<>(allowedOrigins);
-    }
-
-    public List<String> getSourceOrder() {
-        return sourceOrder;
-    }
-
-    public void setSourceOrder(List<String> sourceOrder) {
-        this.sourceOrder = new ArrayList<>(sourceOrder);
     }
 
     public Duration getSeleniumWaitTimeout() {
