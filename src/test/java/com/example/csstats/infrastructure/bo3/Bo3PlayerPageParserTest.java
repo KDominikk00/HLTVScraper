@@ -11,6 +11,7 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class Bo3PlayerPageParserTest {
@@ -84,6 +85,17 @@ class Bo3PlayerPageParserTest {
         assertEquals(43.1, player.stat("AIM", "Headshots %").orElseThrow().value());
         assertEquals(46.0, player.stat("AIM", "Headshots %").orElseThrow().average());
         assertEquals("s", player.stat("AIM", "Flash blinded").orElseThrow().unit());
+    }
+
+    @Test
+    void ignoresRelativePlaceholderAvatars() {
+        Document page = Fixtures.page("player");
+        page.selectFirst(".o-profile-header__image .c-avatar span[style*=background-image]")
+                .attr("style", "background-image: url(\"/img/default/avatar-placeholder.svg\");");
+
+        PlayerStats player = parser.parse("zywoo", page, Map.of("Main", page)).orElseThrow();
+
+        assertNull(player.avatarUrl());
     }
 
     @Test

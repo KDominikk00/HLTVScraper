@@ -156,7 +156,8 @@ public class Bo3PlayerPageParser {
             return null;
         }
         Matcher matcher = BACKGROUND_URL.matcher(element.attr("style").replace("&quot;", "\""));
-        return matcher.find() ? matcher.group(1) : null;
+        // Players without a photo get a relative placeholder path, which is useless outside bo3.gg.
+        return matcher.find() && matcher.group(1).startsWith("http") ? matcher.group(1) : null;
     }
 
     /** The sidebar serves a 20px team logo; ask the image proxy for something usable instead. */
