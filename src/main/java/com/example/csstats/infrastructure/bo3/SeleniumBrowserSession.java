@@ -39,7 +39,7 @@ class SeleniumBrowserSession implements BrowserSession {
             }
             return Jsoup.parse(driver.getPageSource(), url.toString());
         } catch (WebDriverException exception) {
-            throw new ScraperUnavailableException("Could not load " + url, exception);
+            throw new ScraperUnavailableException("Could not load %s, the browser showed: %s".formatted(url, describePage()), exception);
         }
     }
 
@@ -73,6 +73,16 @@ class SeleniumBrowserSession implements BrowserSession {
     @Override
     public void close() {
         driver.quit();
+    }
+
+    /** Title and first words of the current page, to tell a block or challenge page from a slow load. */
+    private String describePage() {
+        try {
+            String text = driver.findElement(By.tagName("body")).getText().replaceAll("\\s+", " ").trim();
+            return "'%s' - %s".formatted(driver.getTitle(), text.substring(0, Math.min(text.length(), 200)));
+        } catch (WebDriverException exception) {
+            return "(nothing readable)";
+        }
     }
 
     private String firstStat(WebElement widget) {
