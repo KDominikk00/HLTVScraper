@@ -69,10 +69,11 @@ class PlayerControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.nickname").value("donk"))
                 .andExpect(jsonPath("$.team").value("Spirit"))
+                .andExpect(jsonPath("$.maps").value(95))
                 .andExpect(jsonPath("$.categories[0].name").value("Main"))
                 .andExpect(jsonPath("$.categories[0].stats[0].name").value("Score"))
                 .andExpect(jsonPath("$.mapStats[0].map").value("Cache"))
-                .andExpect(jsonPath("$.rounds.count").value(1983));
+                .andExpect(jsonPath("$.totals.rounds.count").value(1983));
     }
 
     @Test

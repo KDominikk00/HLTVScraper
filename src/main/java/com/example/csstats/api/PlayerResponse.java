@@ -18,10 +18,7 @@ public record PlayerResponse(
         Integer age,
         LocalDate birthDate,
         Double prizeMoney,
-        CountStat tournaments,
-        CountStat matches,
-        CountStat maps,
-        CountStat rounds,
+        Totals totals,
         List<AccuracyStat> accuracy,
         List<StatCategory> categories,
         List<MapStats> mapStats
@@ -34,13 +31,14 @@ public record PlayerResponse(
                 player.age(),
                 player.birthDate(),
                 player.prizeMoney(),
-                player.tournaments(),
-                player.matches(),
-                player.maps(),
-                player.rounds(),
+                new Totals(player.tournaments(), player.matches(), player.maps(), player.rounds()),
                 player.accuracy(),
                 player.categories(),
                 player.mapStats()
         );
+    }
+
+    /** Last 6 months. */
+    public record Totals(CountStat tournaments, CountStat matches, CountStat maps, CountStat rounds) {
     }
 }
