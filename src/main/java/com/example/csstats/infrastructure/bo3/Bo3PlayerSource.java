@@ -33,7 +33,7 @@ public class Bo3PlayerSource implements PlayerSource {
     // These go to Chrome as well as Jsoup, and Chrome insists on quoted attribute values.
     private static final String RANKED_PLAYER_LINK = ".table-row .table-cell.player a";
     private static final String TOURNAMENT_LINK = "a[href^='/tournaments/']";
-    private static final String TEAM_LINK = "a[href^='/teams/']";
+    private static final String TEAM_LINK = ".c-widget-tournament-teams a[href^='/teams/']";
     private static final String ROSTER_LINK = "li[data-test='squadItem'] a[href^='/players/']";
     private static final String GENERAL_STATS = ".c-widget-general-stats .table-row";
     private static final String INGAME_ROW = Bo3PlayerPageParser.INGAME_WIDGET + " .c-table-ingame-stats .table-group .table-row";

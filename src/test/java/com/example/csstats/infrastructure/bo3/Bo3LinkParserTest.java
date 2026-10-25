@@ -26,6 +26,8 @@ class Bo3LinkParserTest {
         List<String> tournaments = parser.tournaments(Fixtures.page("home"));
 
         assertTrue(tournaments.contains("pgl-masters-bucharest-2026"));
+        assertFalse(tournaments.contains("current"));
+        assertFalse(tournaments.contains("finished"));
         assertFalse(tournaments.stream().anyMatch(slug -> slug.contains("/")));
     }
 
@@ -34,6 +36,8 @@ class Bo3LinkParserTest {
         List<String> teams = parser.teams(Fixtures.page("tournament"));
 
         assertTrue(teams.containsAll(List.of("vitality", "spirit", "natus-vincere")));
+        assertEquals(16, teams.size());
+        assertFalse(teams.contains("earnings"), "menu link, not a team");
     }
 
     @Test

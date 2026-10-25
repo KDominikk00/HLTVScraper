@@ -16,6 +16,10 @@ public class Bo3LinkParser {
 
     private static final String ROSTER_ITEMS = ".c-widget-team-last-match-squad li[data-test=squadItem]";
     private static final String LISTED_PLAYERS = ".table-row .table-cell.player a";
+    /** The tournament's own team list; the page also links to /teams/earnings from the main menu. */
+    public static final String TOURNAMENT_TEAMS = ".c-widget-tournament-teams a[href^=/teams/]";
+    /** Links under /tournaments/ that are listings, not tournaments. */
+    private static final Set<String> TOURNAMENT_LISTINGS = Set.of("current", "finished", "upcoming");
 
     /** Players on the ranking list at /players. */
     public List<String> rankedPlayers(Document document) {
@@ -24,12 +28,14 @@ public class Bo3LinkParser {
 
     /** Tournaments linked from the home page. */
     public List<String> tournaments(Document document) {
-        return slugs(document.select("a[href^=/tournaments/]"), "tournaments");
+        return slugs(document.select("a[href^=/tournaments/]"), "tournaments").stream()
+                .filter(slug -> !TOURNAMENT_LISTINGS.contains(slug))
+                .toList();
     }
 
     /** Teams taking part in a tournament. */
     public List<String> teams(Document document) {
-        return slugs(document.select("a[href^=/teams/]"), "teams");
+        return slugs(document.select(TOURNAMENT_TEAMS), "teams");
     }
 
     /** Starting players of a team, coaches and former members excluded. */
