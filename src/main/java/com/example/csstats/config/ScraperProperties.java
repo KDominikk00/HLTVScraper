@@ -24,6 +24,8 @@ public record ScraperProperties(
         @DefaultValue("true") boolean headless,
         @DefaultValue("300") @Positive int maxPlayers,
         @DefaultValue("12") @Positive int maxTournaments,
-        @DefaultValue("20") @Positive int minPlayers
+        @DefaultValue("20") @Positive int minPlayers,
+        String chromeBinary,
+        String chromedriverPath
 ) {
 }

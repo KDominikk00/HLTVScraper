@@ -22,7 +22,7 @@ class LiveScrapeSmokeTest {
         ScraperProperties properties = new ScraperProperties(
                 URI.create("https://bo3.gg"), Duration.ofHours(24), Path.of("target/live-snapshot.json"),
                 List.of("http://localhost"), Duration.ofSeconds(2), Duration.ofSeconds(30),
-                !"false".equals(System.getProperty("scrapeHeadless")), 3, 1, 1);
+                !"false".equals(System.getProperty("scrapeHeadless")), 3, 1, 1, null, null);
 
         Bo3PlayerSource source = new Bo3PlayerSource(
                 new SeleniumBrowserSessionFactory(properties),

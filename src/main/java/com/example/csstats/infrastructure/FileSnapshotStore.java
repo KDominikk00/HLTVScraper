@@ -3,7 +3,7 @@ package com.example.csstats.infrastructure;
 import com.example.csstats.config.ScraperProperties;
 import com.example.csstats.application.PlayerSnapshot;
 import com.example.csstats.application.PlayerSnapshotStore;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -54,7 +54,7 @@ public class FileSnapshotStore implements PlayerSnapshotStore {
             PlayerSnapshot snapshot = objectMapper.readValue(file.toFile(), PlayerSnapshot.class);
             logger.info("Loaded snapshot of {} players from {}", snapshot.players().size(), file);
             return snapshot;
-        } catch (IOException | RuntimeException exception) {
+        } catch (RuntimeException exception) {
             logger.warn("Ignoring unreadable snapshot file {}: {}", file, exception.getMessage());
             return null;
         }

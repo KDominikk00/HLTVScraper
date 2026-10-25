@@ -3,8 +3,7 @@ package com.example.csstats.infrastructure;
 import com.example.csstats.TestPlayers;
 import com.example.csstats.config.ScraperProperties;
 import com.example.csstats.application.PlayerSnapshot;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
+import tools.jackson.databind.json.JsonMapper;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -20,9 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class FileSnapshotStoreTest {
 
-    private final ObjectMapper objectMapper = new ObjectMapper()
-            .findAndRegisterModules()
-            .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+    private final JsonMapper objectMapper = JsonMapper.builder().build();
 
     @TempDir
     Path tempDir;
@@ -56,7 +53,7 @@ class FileSnapshotStoreTest {
     private FileSnapshotStore storeAt(Path file) {
         ScraperProperties properties = new ScraperProperties(
                 URI.create("https://bo3.gg"), Duration.ofHours(24), file, List.of("http://localhost"),
-                Duration.ZERO, Duration.ofSeconds(1), true, 10, 1, 1);
+                Duration.ZERO, Duration.ofSeconds(1), true, 10, 1, 1, null, null);
         return new FileSnapshotStore(objectMapper, properties);
     }
 }
