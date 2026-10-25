@@ -3,6 +3,7 @@
 # Runs from a home connection on purpose: bo3.gg shows a Cloudflare challenge to datacenter IPs such as GitHub Actions.
 #
 # Usage: scripts/scrape-and-publish.sh [max-players]
+# Set SKIP_PUBLISH=1 to scrape without uploading, for testing.
 set -euo pipefail
 
 cd "$(dirname "$0")/.."
@@ -14,9 +15,14 @@ export SCRAPER_MAX_PLAYERS="${1:-${SCRAPER_MAX_PLAYERS:-300}}"
 
 mkdir -p out
 rm -f out/players-snapshot.json
-java -jar target/cs-stats-api-*.jar \
+"${JAVA_HOME:+$JAVA_HOME/bin/}java" -jar target/cs-stats-api-*.jar \
   --spring.profiles.active=scrape \
   --scraper.snapshot-path=out/players-snapshot.json
+
+if [ "${SKIP_PUBLISH:-}" = "1" ]; then
+  echo "Scraped, not publishing (SKIP_PUBLISH=1)"
+  exit 0
+fi
 
 gh release view data >/dev/null 2>&1 \
   || gh release create data --title "Latest player data" --notes "Updated by scripts/scrape-and-publish.sh. Not a software release."
