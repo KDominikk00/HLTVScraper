@@ -7,6 +7,7 @@ import com.example.csstats.domain.PlayerStats;
 import org.jsoup.nodes.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import java.net.URI;
@@ -24,6 +25,7 @@ import java.util.function.Consumer;
  * and finally each player's own page.
  */
 @Component
+@ConditionalOnProperty(name = "scraper.source", havingValue = "browser", matchIfMissing = true)
 public class Bo3PlayerSource implements PlayerSource {
 
     private static final Logger logger = LoggerFactory.getLogger(Bo3PlayerSource.class);

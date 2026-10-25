@@ -2,13 +2,12 @@ package com.example.csstats.infrastructure.bo3;
 
 import com.example.csstats.config.ScraperProperties;
 import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.chrome.ChromeDriverService;
 import org.openqa.selenium.chrome.ChromeOptions;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
-import java.io.File;
-
 @Component
+@ConditionalOnProperty(name = "scraper.source", havingValue = "browser", matchIfMissing = true)
 public class SeleniumBrowserSessionFactory implements BrowserSessionFactory {
 
     private final ScraperProperties properties;
@@ -24,16 +23,8 @@ public class SeleniumBrowserSessionFactory implements BrowserSessionFactory {
             options.addArguments("--headless=new");
         }
         options.addArguments("--window-size=1920,1080", "--disable-dev-shm-usage", "--no-sandbox");
-        if (properties.chromeBinary() != null) {
-            options.setBinary(properties.chromeBinary());
-        }
-
-        // Without explicit paths Selenium Manager finds or downloads a matching Chrome and driver itself.
-        ChromeDriver driver = properties.chromedriverPath() == null
-                ? new ChromeDriver(options)
-                : new ChromeDriver(new ChromeDriverService.Builder()
-                        .usingDriverExecutable(new File(properties.chromedriverPath()))
-                        .build(), options);
+        // Selenium Manager finds (or downloads) a matching Chrome and driver on its own.
+        ChromeDriver driver = new ChromeDriver(options);
         return new SeleniumBrowserSession(driver, properties);
     }
 }

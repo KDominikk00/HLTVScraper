@@ -13,25 +13,29 @@ public class SnapshotRefresher {
 
     private static final Logger logger = LoggerFactory.getLogger(SnapshotRefresher.class);
 
-    private final PlayerSource playerSource;
+    private final SnapshotSource snapshotSource;
     private final PlayerSnapshotStore snapshotStore;
     private final Clock clock;
 
-    public SnapshotRefresher(PlayerSource playerSource, PlayerSnapshotStore snapshotStore, Clock clock) {
-        this.playerSource = playerSource;
+    public SnapshotRefresher(SnapshotSource snapshotSource, PlayerSnapshotStore snapshotStore, Clock clock) {
+        this.snapshotSource = snapshotSource;
         this.snapshotStore = snapshotStore;
         this.clock = clock;
     }
 
-    /** Scrapes fresh data. On failure the previous snapshot stays in place. */
+    /** Fetches a new snapshot. On failure the previous snapshot stays in place. */
     public void refresh() {
         try {
-            List<PlayerStats> players = playerSource.fetchPlayers(this::saveIfEmpty);
-            snapshotStore.save(new PlayerSnapshot(players, clock.instant()));
-            logger.info("Stored snapshot with {} players", players.size());
+            refreshOrThrow();
         } catch (RuntimeException exception) {
             logger.error("Refresh failed, keeping previous snapshot", exception);
         }
+    }
+
+    public void refreshOrThrow() {
+        PlayerSnapshot snapshot = snapshotSource.fetchSnapshot(this::saveIfEmpty);
+        snapshotStore.save(snapshot);
+        logger.info("Stored snapshot with {} players", snapshot.players().size());
     }
 
     /** Lets a fresh deployment serve partial data while its first long scrape is still running. */

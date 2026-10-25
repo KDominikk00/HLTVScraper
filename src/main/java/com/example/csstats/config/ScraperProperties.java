@@ -2,6 +2,7 @@ package com.example.csstats.config;
 
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Positive;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.bind.DefaultValue;
@@ -25,7 +26,7 @@ public record ScraperProperties(
         @DefaultValue("300") @Positive int maxPlayers,
         @DefaultValue("12") @Positive int maxTournaments,
         @DefaultValue("20") @Positive int minPlayers,
-        String chromeBinary,
-        String chromedriverPath
+        @DefaultValue("browser") @Pattern(regexp = "browser|remote") String source,
+        URI snapshotUrl
 ) {
 }

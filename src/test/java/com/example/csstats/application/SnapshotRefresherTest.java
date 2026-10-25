@@ -1,7 +1,7 @@
 package com.example.csstats.application;
 
-import com.example.csstats.application.PlayerStatsServiceTest.InMemoryStore;
 import com.example.csstats.TestPlayers;
+import com.example.csstats.application.PlayerStatsServiceTest.InMemoryStore;
 import com.example.csstats.domain.PlayerStats;
 import org.junit.jupiter.api.Test;
 
@@ -12,6 +12,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class SnapshotRefresherTest {
@@ -20,9 +21,10 @@ class SnapshotRefresherTest {
     private final Clock clock = Clock.fixed(NOW, ZoneOffset.UTC);
 
     @Test
-    void storesFreshPlayersWithCurrentTimestamp() {
+    void storesTheFetchedSnapshot() {
         InMemoryStore store = new InMemoryStore(null);
-        SnapshotRefresher refresher = new SnapshotRefresher(checkpoint -> List.of(player("NiKo")), store, clock);
+        SnapshotRefresher refresher = new SnapshotRefresher(
+                checkpoint -> new PlayerSnapshot(List.of(player("NiKo")), NOW), store, clock);
 
         refresher.refresh();
 
@@ -43,6 +45,15 @@ class SnapshotRefresherTest {
         refresher.refresh();
 
         assertEquals(old, store.load().orElseThrow());
+    }
+
+    @Test
+    void refreshOrThrowReportsTheFailure() {
+        SnapshotRefresher refresher = new SnapshotRefresher(checkpoint -> {
+            throw new ScraperUnavailableException("blocked");
+        }, new InMemoryStore(null), clock);
+
+        assertThrows(ScraperUnavailableException.class, refresher::refreshOrThrow);
     }
 
     @Test

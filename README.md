@@ -4,10 +4,11 @@ Spring Boot service that scrapes Counter-Strike 2 player stats from [bo3.gg](htt
 
 ## How it works
 
-- A background task scrapes bo3.gg with headless Chrome (Selenium) on startup and then every `scraper.refresh-interval` (24h by default). The pages are rendered client side, so a real browser is needed.
-- The crawl starts at the ranked players list, then follows the tournaments on the home page to their teams, then to each team's starting roster, and finally opens every player page. It uses one browser and waits at least `scraper.request-delay` between page loads.
-- The result is written to a JSON snapshot (`scraper.snapshot-path`) and kept in memory. Requests only read the snapshot, so the API stays fast and never talks to bo3.gg. If a scrape fails, the previous snapshot keeps being served.
-- On a fresh deployment the first scrape publishes partial results every 25 players, so the API has data well before the crawl finishes. Until the first checkpoint it answers `503`. A partial snapshot is not treated as fresh, so a restart in the middle of the first scrape starts a new one.
+Scraping and serving are separate, so the API never needs a browser.
+
+- **Scrape job.** A weekly GitHub Actions workflow (`.github/workflows/scrape.yml`, also runnable by hand) starts the app with the `scrape` profile. It crawls bo3.gg with headless Chrome (Selenium), writes `players-snapshot.json` and uploads it to the `data` release of this repository. The crawl starts at the ranked players list, follows the tournaments on the home page to their teams and starting rosters, then opens every player page, one browser with at least `scraper.request-delay` between page loads.
+- **API.** The Docker image runs with `scraper.source=remote`. It downloads the published snapshot on startup and every `scraper.refresh-interval` (6h in the image), keeps it in memory and serves it. If a download fails, the previous snapshot keeps being served. Until the first download succeeds it answers `503`.
+- **Local development** runs both parts in one process (`scraper.source=browser`, the default): it scrapes on startup and then every `scraper.refresh-interval`, saving partial results every 25 players so there is data before the crawl ends.
 
 ## What is scraped per player
 
@@ -61,8 +62,10 @@ Every property can also be set as an environment variable (`scraper.max-players`
 | Property | Default | |
 |---|---|---|
 | `scraper.base-url` | `https://bo3.gg` | |
-| `scraper.refresh-interval` | `24h` | time between scrapes |
-| `scraper.snapshot-path` | `data/players-snapshot.json` | put this on a persistent volume |
+| `scraper.source` | `browser` | `browser` scrapes in this process, `remote` downloads `scraper.snapshot-url` |
+| `scraper.snapshot-url` | | where the scrape job published the snapshot (remote only) |
+| `scraper.refresh-interval` | `24h` | time between scrapes or downloads |
+| `scraper.snapshot-path` | `data/players-snapshot.json` | local copy that survives restarts |
 | `scraper.allowed-origins` | `http://localhost:5173` | CORS, comma separated |
 | `scraper.request-delay` | `2s` | minimum gap between page loads |
 | `scraper.page-timeout` | `30s` | |
@@ -74,11 +77,24 @@ Every property can also be set as an environment variable (`scraper.max-players`
 
 ## Build and run
 
-Needs a JDK (17+) and Chrome installed.
+Needs JDK 21. Scraping also needs Chrome installed.
 
 ```bash
 ./mvnw clean test
 ./mvnw spring-boot:run
+```
+
+Run a single scrape and exit, the way the workflow does:
+
+```bash
+java -jar target/cs-stats-api-*.jar --spring.profiles.active=scrape --scraper.snapshot-path=out/players-snapshot.json
+```
+
+Run the API image against the published data:
+
+```bash
+docker build -t cs-stats-api .
+docker run -p 8080:8080 cs-stats-api
 ```
 
 The live smoke test scrapes a few real players and is skipped by default:

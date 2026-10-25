@@ -53,7 +53,7 @@ class FileSnapshotStoreTest {
     private FileSnapshotStore storeAt(Path file) {
         ScraperProperties properties = new ScraperProperties(
                 URI.create("https://bo3.gg"), Duration.ofHours(24), file, List.of("http://localhost"),
-                Duration.ZERO, Duration.ofSeconds(1), true, 10, 1, 1, null, null);
+                Duration.ZERO, Duration.ofSeconds(1), true, 10, 1, 1, "browser", null);
         return new FileSnapshotStore(objectMapper, properties);
     }
 }
