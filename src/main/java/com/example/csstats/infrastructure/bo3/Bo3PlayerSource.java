@@ -87,15 +87,16 @@ public class Bo3PlayerSource implements PlayerSource {
         Set<String> slugs = new LinkedHashSet<>();
         slugs.addAll(linkParser.rankedPlayers(session.load(url("/players"), RANKED_PLAYER_LINK)));
 
-        try {
-            for (String teamSlug : discoverTeams(session)) {
-                if (slugs.size() >= properties.maxPlayers()) {
-                    break;
-                }
-                slugs.addAll(linkParser.roster(session.load(url("/teams/" + teamSlug), ROSTER_LINK)));
+        for (String teamSlug : discoverTeams(session)) {
+            if (slugs.size() >= properties.maxPlayers()) {
+                break;
             }
-        } catch (ScraperUnavailableException exception) {
-            logger.warn("Team discovery stopped early, continuing with {} players: {}", slugs.size(), exception.getMessage());
+            // Some links under /teams/ are not teams (rankings pages), so one bad page must not end the discovery.
+            try {
+                slugs.addAll(linkParser.roster(session.load(url("/teams/" + teamSlug), ROSTER_LINK)));
+            } catch (ScraperUnavailableException exception) {
+                logger.warn("Skipped team {}: {}", teamSlug, exception.getMessage());
+            }
         }
 
         return slugs.stream().limit(properties.maxPlayers()).toList();
@@ -103,11 +104,24 @@ public class Bo3PlayerSource implements PlayerSource {
 
     private Set<String> discoverTeams(BrowserSession session) {
         Set<String> teams = new LinkedHashSet<>();
-        List<String> tournaments = linkParser.tournaments(session.load(url("/"), TOURNAMENT_LINK));
-        for (String tournament : tournaments.stream().limit(properties.maxTournaments()).toList()) {
-            teams.addAll(linkParser.teams(session.load(url("/tournaments/" + tournament), TEAM_LINK)));
+        List<String> tournaments;
+        try {
+            tournaments = linkParser.tournaments(session.load(url("/"), TOURNAMENT_LINK)).stream()
+                    .limit(properties.maxTournaments())
+                    .toList();
+        } catch (ScraperUnavailableException exception) {
+            logger.warn("No tournaments found, only the ranked players will be scraped: {}", exception.getMessage());
+            return teams;
         }
-        logger.info("Found {} teams in {} tournaments", teams.size(), Math.min(tournaments.size(), properties.maxTournaments()));
+
+        for (String tournament : tournaments) {
+            try {
+                teams.addAll(linkParser.teams(session.load(url("/tournaments/" + tournament), TEAM_LINK)));
+            } catch (ScraperUnavailableException exception) {
+                logger.warn("Skipped tournament {}: {}", tournament, exception.getMessage());
+            }
+        }
+        logger.info("Found {} teams in {} tournaments", teams.size(), tournaments.size());
         return teams;
     }
 
