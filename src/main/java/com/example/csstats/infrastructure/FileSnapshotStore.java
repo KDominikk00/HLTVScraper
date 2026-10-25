@@ -27,7 +27,7 @@ public class FileSnapshotStore implements PlayerSnapshotStore {
 
     public FileSnapshotStore(ObjectMapper objectMapper, ScraperProperties properties) {
         this.objectMapper = objectMapper;
-        this.file = properties.getSnapshotPath();
+        this.file = properties.snapshotPath();
         this.current = readFromDisk();
     }
 

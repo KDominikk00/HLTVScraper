@@ -38,12 +38,12 @@ public class RefreshScheduleConfig implements SchedulingConfigurer {
 
     @Override
     public void configureTasks(ScheduledTaskRegistrar registrar) {
-        registrar.addFixedDelayTask(new IntervalTask(refresher::refresh, properties.getRefreshInterval(), initialDelay()));
+        registrar.addFixedDelayTask(new IntervalTask(refresher::refresh, properties.refreshInterval(), initialDelay()));
     }
 
     /** Scrape right away when there is no snapshot or it is stale, otherwise wait out the remainder. */
     private Duration initialDelay() {
-        Duration interval = properties.getRefreshInterval();
+        Duration interval = properties.refreshInterval();
         return snapshotStore.load()
                 .map(PlayerSnapshot::fetchedAt)
                 .map(fetchedAt -> interval.minus(Duration.between(fetchedAt, Instant.now(clock))))

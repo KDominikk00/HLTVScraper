@@ -1,6 +1,7 @@
 package com.example.csstats.application;
 
 import com.example.csstats.application.PlayerStatsServiceTest.InMemoryStore;
+import com.example.csstats.TestPlayers;
 import com.example.csstats.domain.PlayerStats;
 import org.junit.jupiter.api.Test;
 
@@ -19,7 +20,7 @@ class SnapshotRefresherTest {
     @Test
     void storesFreshPlayersWithCurrentTimestamp() {
         InMemoryStore store = new InMemoryStore(null);
-        SnapshotRefresher refresher = new SnapshotRefresher(() -> List.of(player("NiKo")), store, clock);
+        SnapshotRefresher refresher = new SnapshotRefresher(checkpoint -> List.of(player("NiKo")), store, clock);
 
         refresher.refresh();
 
@@ -32,7 +33,7 @@ class SnapshotRefresherTest {
     void keepsPreviousSnapshotWhenScrapeFails() {
         PlayerSnapshot old = new PlayerSnapshot(List.of(player("ropz")), Instant.parse("2026-01-01T00:00:00Z"));
         InMemoryStore store = new InMemoryStore(old);
-        SnapshotRefresher refresher = new SnapshotRefresher(() -> {
+        SnapshotRefresher refresher = new SnapshotRefresher(checkpoint -> {
             throw new ScraperUnavailableException("blocked");
         }, store, clock);
 
@@ -41,7 +42,21 @@ class SnapshotRefresherTest {
         assertEquals(old, store.load().orElseThrow());
     }
 
+    @Test
+    void savesPartialResultsOnlyWhileThereIsNoSnapshot() {
+        InMemoryStore store = new InMemoryStore(null);
+        SnapshotRefresher refresher = new SnapshotRefresher(checkpoint -> {
+            checkpoint.accept(List.of(player("a")));
+            checkpoint.accept(List.of(player("a"), player("b")));
+            throw new ScraperUnavailableException("blocked halfway");
+        }, store, clock);
+
+        refresher.refresh();
+
+        assertEquals(1, store.load().orElseThrow().players().size());
+    }
+
     private PlayerStats player(String nickname) {
-        return new PlayerStats(nickname, "Team", "logo", 50, 1000, 80, 1.15, 1.18);
+        return TestPlayers.player(nickname, "Team", 6.0);
     }
 }

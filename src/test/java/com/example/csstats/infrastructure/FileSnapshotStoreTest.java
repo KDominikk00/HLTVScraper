@@ -1,15 +1,17 @@
 package com.example.csstats.infrastructure;
 
+import com.example.csstats.TestPlayers;
 import com.example.csstats.config.ScraperProperties;
 import com.example.csstats.application.PlayerSnapshot;
-import com.example.csstats.domain.PlayerStats;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 
@@ -34,7 +36,7 @@ class FileSnapshotStoreTest {
     void survivesRestart() {
         Path file = tempDir.resolve("nested/snapshot.json");
         PlayerSnapshot snapshot = new PlayerSnapshot(
-                List.of(new PlayerStats("donk", "Spirit", "logo", 90, 1900, 150, 1.30, 1.35)),
+                List.of(TestPlayers.player("donk", "Spirit", 6.8)),
                 Instant.parse("2026-01-01T00:00:00Z")
         );
 
@@ -52,8 +54,9 @@ class FileSnapshotStoreTest {
     }
 
     private FileSnapshotStore storeAt(Path file) {
-        ScraperProperties properties = new ScraperProperties();
-        properties.setSnapshotPath(file);
+        ScraperProperties properties = new ScraperProperties(
+                URI.create("https://bo3.gg"), Duration.ofHours(24), file, List.of("http://localhost"),
+                Duration.ZERO, Duration.ofSeconds(1), true, 10, 1, 1);
         return new FileSnapshotStore(objectMapper, properties);
     }
 }

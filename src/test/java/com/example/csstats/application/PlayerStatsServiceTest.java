@@ -1,5 +1,6 @@
 package com.example.csstats.application;
 
+import com.example.csstats.TestPlayers;
 import com.example.csstats.domain.PlayerStats;
 import org.junit.jupiter.api.Test;
 
@@ -16,7 +17,7 @@ class PlayerStatsServiceTest {
 
     @Test
     void returnsSnapshotTimestamp() {
-        PlayerStatsService service = serviceWith(samplePlayer("donk", 1.32));
+        PlayerStatsService service = serviceWith(samplePlayer("donk", 6.8));
 
         PlayerSearchResult result = service.searchPlayers(new PlayerQuery(null, null, null));
 
@@ -27,29 +28,30 @@ class PlayerStatsServiceTest {
     @Test
     void appliesFiltersAndLimit() {
         PlayerStatsService service = serviceWith(
-                samplePlayer("ZywOo", 1.35),
-                samplePlayer("frozen", 1.13),
-                samplePlayer("flameZ", 1.10)
+                samplePlayer("ZywOo", 7.1),
+                samplePlayer("frozen", 5.8),
+                samplePlayer("flameZ", 5.6)
         );
 
-        PlayerSearchResult result = service.searchPlayers(new PlayerQuery(1, "team", 1.2));
+        PlayerSearchResult result = service.searchPlayers(new PlayerQuery(1, "team", 6.0));
 
         assertEquals(1, result.players().size());
         assertEquals("ZywOo", result.players().get(0).nickname());
     }
 
     @Test
-    void findsPlayerIgnoringCase() {
-        PlayerStatsService service = serviceWith(samplePlayer("m0NESY", 1.28));
+    void findsPlayerBySlugOrNicknameIgnoringCase() {
+        PlayerStatsService service = serviceWith(samplePlayer("m0NESY", 6.9));
 
-        assertEquals("m0NESY", service.getPlayerByNickname("M0nesy").nickname());
+        assertEquals("m0NESY", service.getPlayer("m0nesy").nickname());
+        assertEquals("m0NESY", service.getPlayer("  M0NESY ").nickname());
     }
 
     @Test
     void throwsWhenPlayerIsMissing() {
-        PlayerStatsService service = serviceWith(samplePlayer("ropz", 1.20));
+        PlayerStatsService service = serviceWith(samplePlayer("ropz", 6.2));
 
-        assertThrows(PlayerNotFoundException.class, () -> service.getPlayerByNickname("s1mple"));
+        assertThrows(PlayerNotFoundException.class, () -> service.getPlayer("s1mple"));
     }
 
     @Test
@@ -64,8 +66,8 @@ class PlayerStatsServiceTest {
         return new PlayerStatsService(new InMemoryStore(new PlayerSnapshot(List.of(players), FETCHED_AT)));
     }
 
-    private PlayerStats samplePlayer(String nickname, double rating) {
-        return new PlayerStats(nickname, "Team", "logo", 100, 2000, 100, 1.20, rating);
+    private PlayerStats samplePlayer(String nickname, double score) {
+        return TestPlayers.player(nickname, "Team", score);
     }
 
     static class InMemoryStore implements PlayerSnapshotStore {

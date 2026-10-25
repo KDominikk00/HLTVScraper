@@ -26,8 +26,8 @@ public class PlayerStatsService {
                     && player.teamName().toLowerCase(Locale.ROOT).contains(teamFilter));
         }
 
-        if (query.minRating() != null) {
-            stream = stream.filter(player -> player.rating() != null && player.rating() >= query.minRating());
+        if (query.minScore() != null) {
+            stream = stream.filter(player -> player.score() != null && player.score() >= query.minScore());
         }
 
         if (query.limit() != null) {
@@ -38,17 +38,21 @@ public class PlayerStatsService {
         return new PlayerSearchResult(players, snapshot.fetchedAt());
     }
 
-    public PlayerStats getPlayerByNickname(String nickname) {
-        if (nickname == null || nickname.isBlank()) {
-            throw new IllegalArgumentException("nickname must not be blank");
+    /** Looks a player up by slug first, then by nickname, ignoring case. */
+    public PlayerStats getPlayer(String slugOrNickname) {
+        if (slugOrNickname == null || slugOrNickname.isBlank()) {
+            throw new IllegalArgumentException("player must not be blank");
         }
 
-        String normalizedNickname = nickname.trim().toLowerCase(Locale.ROOT);
-        return currentSnapshot().players().stream()
-                .filter(player -> player.nickname() != null
-                        && player.nickname().trim().toLowerCase(Locale.ROOT).equals(normalizedNickname))
-                .findFirst()
-                .orElseThrow(() -> new PlayerNotFoundException("Player not found: " + nickname));
+        String wanted = slugOrNickname.trim().toLowerCase(Locale.ROOT);
+        List<PlayerStats> players = currentSnapshot().players();
+        return players.stream().filter(player -> wanted.equals(lower(player.slug()))).findFirst()
+                .or(() -> players.stream().filter(player -> wanted.equals(lower(player.nickname()))).findFirst())
+                .orElseThrow(() -> new PlayerNotFoundException("Player not found: " + slugOrNickname));
+    }
+
+    private static String lower(String value) {
+        return value == null ? null : value.trim().toLowerCase(Locale.ROOT);
     }
 
     private PlayerSnapshot currentSnapshot() {

@@ -26,11 +26,18 @@ public class SnapshotRefresher {
     /** Scrapes fresh data. On failure the previous snapshot stays in place. */
     public void refresh() {
         try {
-            List<PlayerStats> players = playerSource.fetchPlayers();
+            List<PlayerStats> players = playerSource.fetchPlayers(this::saveIfEmpty);
             snapshotStore.save(new PlayerSnapshot(players, clock.instant()));
             logger.info("Stored snapshot with {} players", players.size());
         } catch (RuntimeException exception) {
             logger.error("Refresh failed, keeping previous snapshot", exception);
+        }
+    }
+
+    /** Lets a fresh deployment serve partial data while its first long scrape is still running. */
+    private void saveIfEmpty(List<PlayerStats> partial) {
+        if (snapshotStore.load().isEmpty() && !partial.isEmpty()) {
+            snapshotStore.save(new PlayerSnapshot(partial, clock.instant()));
         }
     }
 }

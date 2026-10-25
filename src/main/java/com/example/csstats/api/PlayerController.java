@@ -29,20 +29,20 @@ public class PlayerController {
     public PlayersResponse getPlayers(
             @RequestParam(required = false) @Positive Integer limit,
             @RequestParam(required = false) String team,
-            @RequestParam(required = false) @DecimalMin("0.0") Double minRating
+            @RequestParam(required = false) @DecimalMin("0.0") Double minScore
     ) {
-        PlayerQuery query = new PlayerQuery(limit, team, minRating);
+        PlayerQuery query = new PlayerQuery(limit, team, minScore);
         PlayerSearchResult result = playerStatsService.searchPlayers(query);
 
-        List<PlayerResponse> players = result.players().stream()
-                .map(PlayerResponse::from)
+        List<PlayerSummaryResponse> players = result.players().stream()
+                .map(PlayerSummaryResponse::from)
                 .toList();
 
         return new PlayersResponse(players, players.size(), result.fetchedAt());
     }
 
-    @GetMapping("/players/{nickname}")
-    public PlayerResponse getPlayerByNickname(@PathVariable String nickname) {
-        return PlayerResponse.from(playerStatsService.getPlayerByNickname(nickname));
+    @GetMapping("/players/{player}")
+    public PlayerResponse getPlayer(@PathVariable String player) {
+        return PlayerResponse.from(playerStatsService.getPlayer(player));
     }
 }
