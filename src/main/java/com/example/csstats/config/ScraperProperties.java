@@ -1,0 +1,97 @@
+package com.example.csstats.config;
+
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.validation.annotation.Validated;
+
+import java.net.URI;
+import java.nio.file.Path;
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
+
+@ConfigurationProperties(prefix = "scraper")
+@Validated
+public class ScraperProperties {
+
+    @NotNull
+    private URI playersUrl = URI.create("https://www.hltv.org/stats/players");
+
+    @NotNull
+    private Duration refreshInterval = Duration.ofHours(6);
+
+    @NotNull
+    private Path snapshotPath = Path.of("data", "players-snapshot.json");
+
+    @NotBlank
+    private String userAgent =
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
+                    + "(KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36";
+
+    @NotEmpty
+    private List<String> allowedOrigins =
+            new ArrayList<>(List.of("http://localhost:5173"));
+
+    @NotNull
+    private Duration seleniumWaitTimeout = Duration.ofSeconds(30);
+
+    private boolean seleniumHeadless = true;
+
+    public URI getPlayersUrl() {
+        return playersUrl;
+    }
+
+    public void setPlayersUrl(URI playersUrl) {
+        this.playersUrl = playersUrl;
+    }
+
+    public Duration getRefreshInterval() {
+        return refreshInterval;
+    }
+
+    public void setRefreshInterval(Duration refreshInterval) {
+        this.refreshInterval = refreshInterval;
+    }
+
+    public Path getSnapshotPath() {
+        return snapshotPath;
+    }
+
+    public void setSnapshotPath(Path snapshotPath) {
+        this.snapshotPath = snapshotPath;
+    }
+
+    public String getUserAgent() {
+        return userAgent;
+    }
+
+    public void setUserAgent(String userAgent) {
+        this.userAgent = userAgent;
+    }
+
+    public List<String> getAllowedOrigins() {
+        return allowedOrigins;
+    }
+
+    public void setAllowedOrigins(List<String> allowedOrigins) {
+        this.allowedOrigins = new ArrayList<>(allowedOrigins);
+    }
+
+    public Duration getSeleniumWaitTimeout() {
+        return seleniumWaitTimeout;
+    }
+
+    public void setSeleniumWaitTimeout(Duration seleniumWaitTimeout) {
+        this.seleniumWaitTimeout = seleniumWaitTimeout;
+    }
+
+    public boolean isSeleniumHeadless() {
+        return seleniumHeadless;
+    }
+
+    public void setSeleniumHeadless(boolean seleniumHeadless) {
+        this.seleniumHeadless = seleniumHeadless;
+    }
+}
