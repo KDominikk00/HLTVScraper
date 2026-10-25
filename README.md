@@ -6,7 +6,7 @@ Spring Boot service that scrapes Counter-Strike 2 player stats from [bo3.gg](htt
 
 Scraping and serving are separate, so the API never needs a browser.
 
-- **Scrape job.** A weekly GitHub Actions workflow (`.github/workflows/scrape.yml`, also runnable by hand) starts the app with the `scrape` profile. It crawls bo3.gg with headless Chrome (Selenium), writes `players-snapshot.json` and uploads it to the `data` release of this repository. The crawl starts at the ranked players list, follows the tournaments on the home page to their teams and starting rosters, then opens every player page, one browser with at least `scraper.request-delay` between page loads.
+- **Scrape job.** `scripts/scrape-and-publish.sh` starts the app with the `scrape` profile. It crawls bo3.gg with headless Chrome (Selenium), writes `players-snapshot.json` and uploads it to the `data` release of this repository. The crawl starts at the ranked players list, follows the tournaments on the home page to their teams and starting rosters, then opens every player page, one browser with at least `scraper.request-delay` between page loads. Run it weekly from a normal home connection (`scripts/com.cscomparison.scrape.plist` is a macOS launchd template). It cannot run on GitHub Actions or other cloud hosts: bo3.gg shows a Cloudflare challenge to datacenter IPs, so the scrape fails there.
 - **API.** The Docker image runs with `scraper.source=remote`. It downloads the published snapshot on startup and every `scraper.refresh-interval` (6h in the image), keeps it in memory and serves it. If a download fails, the previous snapshot keeps being served. Until the first download succeeds it answers `503`.
 - **Local development** runs both parts in one process (`scraper.source=browser`, the default): it scrapes on startup and then every `scraper.refresh-interval`, saving partial results every 25 players so there is data before the crawl ends.
 
@@ -84,7 +84,7 @@ Needs JDK 21. Scraping also needs Chrome installed.
 ./mvnw spring-boot:run
 ```
 
-Run a single scrape and exit, the way the workflow does:
+Run a single scrape and exit, the way the script does:
 
 ```bash
 java -jar target/cs-stats-api-*.jar --spring.profiles.active=scrape --scraper.snapshot-path=out/players-snapshot.json
