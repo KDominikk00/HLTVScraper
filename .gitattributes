@@ -1,2 +1,5 @@
 /mvnw text eol=lf
 *.cmd text eol=crlf
+
+# Saved bo3.gg pages used as parser test data, not source code. Keeps them out of the language stats.
+src/test/resources/fixtures/** linguist-vendored
